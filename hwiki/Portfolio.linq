@@ -19,6 +19,18 @@ private Portfolio LoadPortfolio()
 
 void LoadPrices(Portfolio portfolio)
 {
+	portfolio.AddPrice(new DateTime(2021, 09, 10), "SOL", 262.16M);
+	portfolio.AddPrice(new DateTime(2021, 09, 10), "ADA", 3.515329M);
+	portfolio.AddPrice(new DateTime(2021, 09, 08), "BTC", 64283.93M);
+	portfolio.AddPrice(new DateTime(2021, 09, 08), "SOL", 241.02M);	
+	portfolio.AddPrice(new DateTime(2021, 09, 08), "ETH", 4769.95M);
+	portfolio.AddPrice(new DateTime(2021, 09, 08), "ADA", 3.490953M);
+	portfolio.AddPrice(new DateTime(2021, 09, 07), "ETH", 5432.02M);
+	portfolio.AddPrice(new DateTime(2021, 09, 07), "BTC", 71918.04M);
+	portfolio.AddPrice(new DateTime(2021, 09, 07), "SOL", 227.6M);
+	portfolio.AddPrice(new DateTime(2021, 09, 07), "ADA", 3.9195M);
+	portfolio.AddPrice(new DateTime(2021, 09, 07), "AVA", 6.3749M);
+	portfolio.AddPrice(new DateTime(2021, 09, 07), "WAXP", 0.494084M);	
 	portfolio.AddPrice(new DateTime(2021, 09, 06), "ADA", 3.906439M);
 	portfolio.AddPrice(new DateTime(2021, 09, 06), "ETH", 5360.5M);
 	portfolio.AddPrice(new DateTime(2021, 09, 06), "BTC", 67986.04M);
@@ -46,6 +58,42 @@ void LoadPrices(Portfolio portfolio)
 		
 void LoadCoinTransactions(Portfolio portfolio)
 {
+	portfolio.AddCoinTransaction(
+		new CoinTransaction(
+			code: "ADA",
+			quantity: 56.531084M,
+			rate: 3.536826M,
+			when: new DateTime(2021, 9, 10),
+			aussieDollars: 201.94M
+		));
+		
+	portfolio.AddCoinTransaction(
+	new CoinTransaction(
+		code: "SOL",
+		quantity: -0.938739M,
+		rate: 216.10101M,
+		when: new DateTime(2021, 9, 8),
+		aussieDollars: -200.83M
+	));
+	
+	portfolio.AddCoinTransaction(
+		new CoinTransaction(
+			code: "ADA",
+			quantity: 21.7077024M,
+			rate: 1370.392929M,
+			when: new DateTime(2021, 9, 07),
+			aussieDollars: 84.68M
+		));
+
+	portfolio.AddCoinTransaction(
+		new CoinTransaction(
+			code: "ETH",
+			quantity: -0.016M,
+			rate: 5431.42M,
+			when: new DateTime(2021, 9, 07),
+			aussieDollars: -84.68M
+		));
+
 	portfolio.AddCoinTransaction(
 		new CoinTransaction(
 			code: "SOL",
@@ -506,7 +554,10 @@ public class Coin
 	
 	public decimal TotalDollarCost()
 	{
-		return CoinTransactions.Sum(t => t.DollarCost);
+		var totalInvested = CoinTransactions.Sum(t => t.DollarCost);
+		if (totalInvested < 0M)
+			totalInvested = 0;
+		return totalInvested;
 	}
 
 	public decimal Profit()
@@ -517,11 +568,15 @@ public class Coin
 	private string Invested()
 	{
 		var invested = TotalDollarCost();
+		if (invested < 0M)
+			invested = 0M;
 		return $"{invested:c}";
 	}
 	
 	private decimal CoinRoi()
 	{
+		if (TotalDollarCost() == 0M )
+			return 0M;
 		return Profit() / TotalDollarCost();
 	}
 
@@ -535,7 +590,7 @@ public class Coin
 			win = "down";
 		return win;
 	}
-	
+
 	private string ProfitOut()
 	{
 		var profit = Profit();
@@ -545,6 +600,8 @@ public class Coin
 	private string RoiOut()
 	{
 		var roi = CoinRoi();
+		if (roi <= 0M)
+			return string.Empty;
 		return $"{roi:0.0##}";
 	}
 
@@ -565,7 +622,7 @@ public class Coin
 		var balAsDollars = $"{Balance():0.0#####}";
 		return balAsDollars;
 	}
-	
+
 	public decimal Balance()
 	{
 		var balance = 0M;
@@ -575,11 +632,11 @@ public class Coin
 		}
 		return balance;
 	}
-	
+
 	public decimal Rate()
 	{
 		var rate = 0M;
-		var sortedPrices = Prices.OrderByDescending(p=>p.PriceOn).ToList();
+		var sortedPrices = Prices.OrderByDescending(p => p.PriceOn).ToList();
 		rate = sortedPrices.FirstOrDefault().PricedAt;
 		return rate;
 	}
